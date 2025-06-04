@@ -28,9 +28,9 @@
   </style>
 </head>
 <body>
-  <h2>ChatGPT Mini</h2>
+  <h2>ChatGPT AI</h2>
   <div id="chat"></div>
-  <input type="text" id="input" placeholder="Say something..." />
+  <input type="text" id="input" placeholder="Type a message..." />
   <button onclick="sendMessage()">Send</button>
 
   <script>
@@ -44,21 +44,31 @@
       addMessage('You', message);
       input.value = '';
 
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer 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",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: [{ role: "user", content: message }]
-        })
-      });
+      try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer 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",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: "gpt-3.5-turbo",
+            messages: [{ role: "user", content: message }]
+          })
+        });
 
-      const data = await response.json();
-      const reply = data.choices[0].message.content.trim();
-      addMessage('AI', reply);
+        if (!response.ok) {
+          const errorText = await response.text();
+          addMessage('AI (error)', `HTTP ${response.status}: ${errorText}`);
+          return;
+        }
+
+        const data = await response.json();
+        const reply = data.choices?.[0]?.message?.content || "Error: No response";
+        addMessage('AI', reply);
+      } catch (err) {
+        addMessage('AI (error)', `Request failed: ${err.message}`);
+      }
     }
 
     function addMessage(sender, text) {
